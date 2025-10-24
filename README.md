@@ -1,6 +1,6 @@
 <h1>ExpNo 6 : Implement Minimax Search Algorithm for a Simple TIC-TAC-TOE game</h1> 
-<h3>Name:      </h3>
-<h3>Register Number:       </h3>
+<h3>Name: Moulishwar G     </h3>
+<h3>Register Number:  2305001020     </h3>
 <H3>Aim:</H3>
 <p>
     Implement Minimax Search Algorithm for a Simple TIC-TAC-TOE game
@@ -62,91 +62,85 @@ Let's walk through the algorithm's execution with the full move tree, and show w
 
 Here is the function for scoring the game:
 
-# @player is the turn taking player
-def score(game)
-    if game.win?(@player)
-        return 10
-    elsif game.win?(@opponent)
-        return -10
-    else
-        return 0
-    end
-end
-Simple enough, return +10 if the current player wins the game, -10 if the other player wins and 0 for a draw. You will note that who the player is doesn't matter. X or O is irrelevant, only who's turn it happens to be.
-
-And now the actual minimax algorithm; note that in this implementation a choice or move is simply a row / column address on the board, for example [0,2] is the top right square on a 3x3 board.
-
-def minimax(game)
-    return score(game) if game.over?
-    scores = [] # an array of scores
-    moves = []  # an array of moves
-
-    # Populate the scores array, recursing as needed
-    game.get_available_moves.each do |move|
-        possible_game = game.get_new_state(move)
-        scores.push minimax(possible_game)
-        moves.push move
-    end
-
-    # Do the min or the max calculation
-    if game.active_turn == @player
-        # This is the max calculation
-        max_score_index = scores.each_with_index.max[1]
-        @choice = moves[max_score_index]
-        return scores[max_score_index]
-    else
-        # This is the min calculation
-        min_score_index = scores.each_with_index.min[1]
-        @choice = moves[min_score_index]
-        return scores[min_score_index]
-    end
-end
+    
 ## program
 ```python
-import math
+import math,time
 
-def minimax(curDepth, nodeIndex, maxTurn, scores, targetDepth, alpha, beta):
-    # Base case: targetDepth reached
-    if curDepth == targetDepth:
-        return scores[nodeIndex]
+def win(b,p):
+    for i in range(3):
+        if all(b[i][j]==p for j in range(3)) or all(b[j][i]==p for j in range(3)): return True
+    return b[0][0]==b[1][1]==b[2][2]==p or b[0][2]==b[1][1]==b[2][0]==p
 
-    if maxTurn:
-        maxEval = -math.inf  # Initialize maximum evaluation
-        # Maximizing player's turn
-        for i in range(2):  # There are two children for each node
-            eval = minimax(curDepth + 1, nodeIndex * 2 + i, False, scores, targetDepth, alpha, beta)
-            maxEval = max(maxEval, eval)
-            alpha = max(alpha, eval)  # Update alpha
-            if beta <= alpha:  # Beta pruning
-                break
-        return maxEval
+def full(b): return all(c!="." for r in b for c in r)
+
+def show(b):
+    for r in b: print("|".join(r))
+    print()
+
+def minimax(b,maxi):
+    if win(b,"X"): return 1
+    if win(b,"O"): return -1
+    if full(b): return 0
+    if maxi:
+        best=-math.inf
+        for i in range(3):
+            for j in range(3):
+                if b[i][j]==".":
+                    b[i][j]="X"
+                    best=max(best,minimax(b,False))
+                    b[i][j]="."
+        return best
     else:
-        minEval = math.inf  # Initialize minimum evaluation
-        # Minimizing player's turn
-        for i in range(2):  # There are two children for each node
-            eval = minimax(curDepth + 1, nodeIndex * 2 + i, True, scores, targetDepth, alpha, beta)
-            minEval = min(minEval, eval)
-            beta = min(beta, eval)  # Update beta
-            if beta <= alpha:  # Alpha pruning
-                break
-        return minEval
+        best=math.inf
+        for i in range(3):
+            for j in range(3):
+                if b[i][j]==".":
+                    b[i][j]="O"
+                    best=min(best,minimax(b,True))
+                    b[i][j]="."
+        return best
 
- scores = [3, 5, 6, 9, 1, 2, 0, -1]
-    targetDepth = 3  # Example target depth
+def best_move(b):
+    mv=(-1,-1); val=-math.inf
+    for i in range(3):
+        for j in range(3):
+            if b[i][j]==".":
+                b[i][j]="X"
+                v=minimax(b,False)
+                b[i][j]="."
+                if v>val: mv,val=(i,j),v
+    return mv
 
-    # Start Minimax from the root with initial alpha and beta values
-    best_value = minimax(0, 0, True, scores, targetDepth, -math.inf, math.inf)
-    print("The optimal value is:", best_value)
+b=[["."]*3 for _ in range(3)]
+while True:
+    show(b)
+    if win(b,"X"): print("X wins!"); break
+    if win(b,"O"): print("O wins!"); break
+    if full(b): print("It's a draw!"); break
+
+    t=time.time()
+    x,y=best_move(b)
+    print(f"Evaluation time: {round(time.time()-t,4)}s")
+    print(f"Recommended move: X = {x}, Y = {y}")
+    b[x][y]="X"
+    show(b)
+
+    if win(b,"X"): print("X wins!"); break
+    if full(b): print("It's a draw!"); break
+
+    x=int(input("Insert the X coordinate: "))
+    y=int(input("Insert the Y coordinate: "))
+    if b[x][y]==".": b[x][y]="O"
 ```
 
 <hr>
-<h2>Sample Input and Output</h2>
+<h2>Input and Output</h2>
 
-![image](https://github.com/natsaravanan/19AI405FUNDAMENTALSOFARTIFICIALINTELLIGENCE/assets/87870499/6b668685-8bcc-43c5-b5c2-ddd43f3da84a)
-![image](https://github.com/natsaravanan/19AI405FUNDAMENTALSOFARTIFICIALINTELLIGENCE/assets/87870499/8ca1b08a-8312-4ef5-89df-e69b7b2c3fa2)
-![image](https://github.com/natsaravanan/19AI405FUNDAMENTALSOFARTIFICIALINTELLIGENCE/assets/87870499/dc06427a-d4ce-43a1-95bd-9acfaefac323)
-![image](https://github.com/natsaravanan/19AI405FUNDAMENTALSOFARTIFICIALINTELLIGENCE/assets/87870499/a8a27e2a-6fd4-46a2-afb5-6d27b8556702)
-![image](https://github.com/natsaravanan/19AI405FUNDAMENTALSOFARTIFICIALINTELLIGENCE/assets/87870499/a2acb6a1-ed8e-42e5-8968-fe805e4b0255)
+<img width="371" height="422" alt="Screenshot 2025-10-24 090014" src="https://github.com/user-attachments/assets/63fafd31-50de-477d-a02f-57950b319001" />
+
+<img width="386" height="531" alt="Screenshot 2025-10-24 090026" src="https://github.com/user-attachments/assets/af83fb89-e06a-4ca3-8c9c-1366777ac167" />
+
 
 <hr>
 <h2>Result:</h2>
